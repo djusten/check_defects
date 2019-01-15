@@ -20,3 +20,6 @@ RUN apt-get update && apt-get upgrade -y && \
     make -j4 && \
     make install && \
     ldconfig
+
+VOLUME /app-build
+WORKDIR /app-build
