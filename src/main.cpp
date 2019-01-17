@@ -51,7 +51,11 @@ int main(int argc, char** argv)
   gint payload;
   gint counter = 0;
   int i;
-	int frame_trigger = 10;
+	int frame_trigger = 0;
+
+	if (argc > 1) {
+		frame_trigger = strtol (argv[1], NULL, 0);
+	}
 
   arv_enable_interface("Fake");
 
