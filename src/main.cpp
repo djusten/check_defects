@@ -5,30 +5,31 @@
 
 using namespace std;
 
-#define GENICAM_FILENAME "/home/diogo/work/personal/check_defects/src/arv-fake-camera.xml"
-
 static void arv_save_pgm(ArvBuffer * buffer, const char * filename)
 {
 		size_t buffer_size;
-		const char *framebuffer = (const char *) arv_buffer_get_data (buffer, &buffer_size);
+		const char *framebuffer;
+		gchar *head;
+		gchar *buff;
 
-		gchar *head = g_strdup_printf ("P5\n %d\n %d\n 255\n", arv_buffer_get_image_height(buffer), arv_buffer_get_image_width(buffer));
+		framebuffer = arv_buffer_get_data (buffer, &buffer_size);
 
-		char *x = (char *)malloc(strlen(head) + buffer_size);
-		memcpy (x, head, strlen(head));
-		memcpy (x + strlen(head), framebuffer, buffer_size);
+		head = g_strdup_printf ("P5\n %d\n %d\n 255\n", arv_buffer_get_image_height(buffer), arv_buffer_get_image_width(buffer));
 
-		g_file_set_contents (filename, (const gchar *)x, buffer_size + strlen(head), NULL);
+		buff = malloc(strlen(head) + buffer_size);
+		memcpy (buff, head, strlen(head));
+		memcpy (buff + strlen(head), framebuffer, buffer_size);
 
-		free(x);
+		g_file_set_contents (filename, (const gchar *)buff, buffer_size + strlen(head), NULL);
+
+		free(head);
+		free(buff);
 }
 
-static void
-new_buffer_cb (ArvStream *stream, void *data)
+static void new_buffer_cb (ArvStream *stream, void *user_data)
 {
   ArvBuffer *buffer;
 
-	printf("callback\n");
   buffer = arv_stream_try_pop_buffer (stream);
   if (buffer != NULL) {
     if (arv_buffer_get_status (buffer) == ARV_BUFFER_STATUS_SUCCESS) {
@@ -37,18 +38,16 @@ new_buffer_cb (ArvStream *stream, void *data)
   }
 }
 
-static void
-stream_cb (void *user_data, ArvStreamCallbackType type, ArvBuffer *buffer)
+static void stream_cb (void *user_data, ArvStreamCallbackType type, ArvBuffer *buffer)
 {
-	printf("type: %d\n", type);
-	if (type == ARV_STREAM_CALLBACK_TYPE_BUFFER_DONE )
-	printf("stram_CB frameid: %d\n", arv_buffer_get_frame_id (buffer));
+	if (type == ARV_STREAM_CALLBACK_TYPE_BUFFER_DONE) {
+		printf("stram_CB frameid: %d\n", arv_buffer_get_frame_id (buffer));
+	}
 }
 
 int main(int argc, char** argv)
 {
   ArvCamera *camera;
-  ArvDevice *device;
   ArvStream *stream;
   ArvBuffer *buffer;
   gint payload;
@@ -62,41 +61,17 @@ int main(int argc, char** argv)
   camera = arv_camera_new ("Fake_1");
   g_assert (ARV_IS_CAMERA (camera));
 
-	ArvFakeCamera *camera_fake = 	arv_fake_camera_new("Fake_1");
-	printf("acquisition: %d\n", arv_fake_camera_get_acquisition_status(camera_fake));
-
-	arv_camera_set_trigger (camera, "Software");
-
-	printf("Trigger: %s\n", arv_camera_get_trigger_source (camera));
-
-	guint n_sources;
-	const char **trigger = arv_camera_get_available_trigger_sources(camera, &n_sources);
-	printf("n_source: %d\n", n_sources);
-	printf("source: %s\n", trigger[0]);
-
-	const char **xx = arv_camera_get_available_triggers (camera, &n_sources);
-	printf("n_source: %d\n", n_sources);
-	printf("source: %s\n", xx[0]);
-	printf("source: %s\n", xx[1]);
-
-	//buffer = arv_camera_acquisition (camera, 0);
-	//arv_save_png(buffer, "/tmp/png.png");
-	//return 0;
-
-  device = arv_camera_get_device (camera);
-  g_assert (ARV_IS_DEVICE (device));
-
   stream = arv_camera_create_stream (camera, stream_cb, NULL);
   g_assert (ARV_IS_STREAM (stream));
 
   payload = arv_camera_get_payload (camera);
 
-	for (i = 0; i <2; i++) {
-		arv_stream_push_buffer (stream,  arv_buffer_new (payload, NULL));
-	}
+	//for (i = 0; i <2; i++) {
+	//	arv_stream_push_buffer (stream,  arv_buffer_new (payload, NULL));
+	//}
 
   arv_camera_set_acquisition_mode (camera, ARV_ACQUISITION_MODE_CONTINUOUS);
-  arv_camera_start_acquisition (camera);
+  arv_camera_start_acquisition(camera);
 
 	g_signal_connect (stream, "new-buffer", G_CALLBACK (new_buffer_cb), NULL);
 	arv_stream_set_emit_signals (stream, TRUE);
