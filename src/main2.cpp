@@ -7,18 +7,18 @@
 
 #include <string>
 
-//class CvCaptureCAM_Aravis : public CvCapture {
-class CvCaptureCAM_Aravis {
+class Camera {
 public:
-    CvCaptureCAM_Aravis();
-    virtual ~CvCaptureCAM_Aravis()
+    Camera();
+    virtual ~Camera()
     {
         close();
     }
 
     virtual bool open(int);
     virtual void close();
-    virtual bool grabFrame(); // CV_OVERRIDE;
+    virtual char *getFramebuffer(int*);
+    virtual void arv_save_pgm(const char*, gchar*, int);
 
 protected:
     bool create(int);
@@ -29,23 +29,27 @@ protected:
 
     bool getDeviceNameById(int id, std::string &device);
 
-    ArvCamera       *camera;                // Camera to control.
-    ArvStream       *stream;                // Object for video stream reception.
-    void            *framebuffer;           //
+    ArvCamera *camera;
+    ArvStream *stream;
+    const void *framebuffer;
 
-    unsigned int    payload;                // Width x height x Pixel width.
+    unsigned int payload;
+
+		int width;
+		int height;
 };
 
-CvCaptureCAM_Aravis::CvCaptureCAM_Aravis()
+Camera::Camera()
 {
     camera = NULL;
     stream = NULL;
     framebuffer = NULL;
 
     payload = 0;
+		width, height = 0;
 }
 
-void CvCaptureCAM_Aravis::close()
+void Camera::close()
 {
     if(camera) {
         stopCapture();
@@ -55,7 +59,7 @@ void CvCaptureCAM_Aravis::close()
     }
 }
 
-bool CvCaptureCAM_Aravis::getDeviceNameById(int id, std::string &device)
+bool Camera::getDeviceNameById(int id, std::string &device)
 {
     arv_update_device_list();
 
@@ -67,9 +71,8 @@ bool CvCaptureCAM_Aravis::getDeviceNameById(int id, std::string &device)
     return false;
 }
 
-bool CvCaptureCAM_Aravis::create( int index )
+bool Camera::create(int index)
 {
-		printf("create\n");
     std::string deviceName;
     if(!getDeviceNameById(index, deviceName))
         return false;
@@ -77,7 +80,7 @@ bool CvCaptureCAM_Aravis::create( int index )
     return NULL != (camera = arv_camera_new(deviceName.c_str()));
 }
 
-bool CvCaptureCAM_Aravis::init_buffers()
+bool Camera::init_buffers()
 {
     if(stream) {
         g_object_unref(stream);
@@ -94,16 +97,15 @@ bool CvCaptureCAM_Aravis::init_buffers()
     return false;
 }
 
-bool CvCaptureCAM_Aravis::open( int index )
+bool Camera::open(int index)
 {
-		printf("open\n");
     if(create(index)) {
         return startCapture();
     }
     return false;
 }
 
-bool CvCaptureCAM_Aravis::grabFrame()
+char *Camera::getFramebuffer(int *size)
 {
     // remove content of previous frame
     framebuffer = NULL;
@@ -120,16 +122,21 @@ bool CvCaptureCAM_Aravis::grabFrame()
         }
         if(arv_buffer != NULL && tries < max_tries) {
             size_t buffer_size;
-            framebuffer = (void*)arv_buffer_get_data (arv_buffer, &buffer_size);
+            framebuffer = arv_buffer_get_data (arv_buffer, &buffer_size);
+
+						arv_buffer_get_image_region(arv_buffer, NULL, NULL, &width, &height);
+
+						gchar *raw_data = (gchar *) g_memdup(framebuffer, buffer_size);
+						*size = buffer_size;
 
             arv_stream_push_buffer(stream, arv_buffer);
-            return true;
+            return raw_data;
         }
     }
-    return false;
+    return NULL;
 }
 
-void CvCaptureCAM_Aravis::stopCapture()
+void Camera::stopCapture()
 {
     arv_camera_stop_acquisition(camera);
 
@@ -139,7 +146,7 @@ void CvCaptureCAM_Aravis::stopCapture()
     }
 }
 
-bool CvCaptureCAM_Aravis::startCapture()
+bool Camera::startCapture()
 {
     if(init_buffers() ) {
         arv_camera_set_acquisition_mode(camera, ARV_ACQUISITION_MODE_CONTINUOUS);
@@ -150,10 +157,9 @@ bool CvCaptureCAM_Aravis::startCapture()
     return false;
 }
 
-//CvCapture* cvCreateCameraCapture_Aravis( int index )
-CvCaptureCAM_Aravis* cvCreateCameraCapture_Aravis( int index )
+Camera* newCamera(int index)
 {
-    CvCaptureCAM_Aravis* capture = new CvCaptureCAM_Aravis;
+    Camera* capture = new Camera;
 
     if(capture->open(index)) {
         return capture;
@@ -163,20 +169,54 @@ CvCaptureCAM_Aravis* cvCreateCameraCapture_Aravis( int index )
     return NULL;
 }
 
-int main ()
+void Camera::arv_save_pgm(const char * filename, gchar *data, int size)
 {
-	//CvCapture* = cvCreateCameraCapture_Aravis(index);
+		gchar *head;
+		gchar *buff;
+
+		head = g_strdup_printf ("P5\n %d\n %d\n 255\n", height, width);
+
+		buff = (gchar *)malloc(strlen(head) + size);
+		memcpy (buff, head, strlen(head));
+		memcpy (buff + strlen(head), data, size);
+
+		g_file_set_contents (filename, (const gchar *)buff, size + strlen(head), NULL);
+
+		g_free(head);
+		free(buff);
+}
+
+int main(int argc, char** argv)
+{
 	int index = 0;
+
+	int frame_trigger = 0;
+
+	if (argc > 1) {
+		frame_trigger = strtol (argv[1], NULL, 0);
+	}
 
 	arv_enable_interface("Fake");
 
-	CvCaptureCAM_Aravis *CvCapture = cvCreateCameraCapture_Aravis(index);
+	Camera *cameraCapture = newCamera(index);
 
-	if (CvCapture == NULL) {
+	if (cameraCapture == NULL) {
 		printf("Error\n");
 	} else {
-		printf("Sucess\n");
+
+		int size;
+		char *p;
+
+		p = cameraCapture->getFramebuffer(&size);
+
+		cameraCapture->arv_save_pgm("/tmp/file.pgm", p, size);
+
+		cameraCapture->close();
+
+		g_free(p);
 	}
+
+  arv_shutdown();
 
 	return 0;
 }
