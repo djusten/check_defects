@@ -15,7 +15,8 @@
 
 cmake_minimum_required (VERSION 3.0)
 project (check-defects)
-add_compile_options (-std=c++14 -Wall -Werror)
+add_compile_options (-std=c++14)
+#add_compile_options (-std=c++14 -Wall -Werror)
 
 #### aravis
 FIND_PACKAGE(PkgConfig)
