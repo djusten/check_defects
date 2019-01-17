@@ -31,4 +31,5 @@ set (SOURCE_FILES
 add_executable (check-defects ${SOURCE_FILES})
 
 target_link_libraries (check-defects
+		png
     ${ARAVIS_LIBRARIES})
