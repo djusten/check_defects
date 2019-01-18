@@ -24,10 +24,15 @@ include_directories (${ARAVIS_INCLUDE_DIRS})
 
 #### build
 set (SOURCE_FILES
-     src/main.cpp
+     src/camera.cpp
     )
 
 add_executable (check-defects ${SOURCE_FILES})
-
 target_link_libraries (check-defects
-    ${ARAVIS_LIBRARIES})
+    ${ARAVIS_LIBRARIES}
+    )
+
+add_executable (check-defects-c src/main_c.cpp)
+target_link_libraries (check-defects-c
+    ${ARAVIS_LIBRARIES}
+    )
