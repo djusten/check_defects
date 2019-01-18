@@ -1,3 +1,5 @@
+#include <arv.h>
+
 #include "icamera.h"
 
 class Camera : public ICamera {

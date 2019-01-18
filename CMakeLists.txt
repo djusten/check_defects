@@ -24,6 +24,7 @@ include_directories (${ARAVIS_INCLUDE_DIRS})
 
 #### build
 set (SOURCE_FILES
+     src/main.cpp
      src/camera.cpp
     )
 
@@ -32,7 +33,12 @@ target_link_libraries (check-defects
     ${ARAVIS_LIBRARIES}
     )
 
-add_executable (check-defects-c src/main_c.cpp)
-target_link_libraries (check-defects-c
+#### build learning file
+set (LEARNING_SOURCE_FILES
+     src/main_c.cpp
+    )
+
+add_executable (check-defects-learning ${LEARNING_SOURCE_FILES})
+target_link_libraries (check-defects-learning
     ${ARAVIS_LIBRARIES}
     )

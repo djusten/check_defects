@@ -2,7 +2,6 @@
 #include <memory>
 #include <fstream>
 
-#include <arv.h>
 #include "camera.h"
 
 Camera::Camera()
@@ -125,28 +124,4 @@ void Camera::save_to_file(std::string filename, std::vector<char> data)
 
   output_file.close();
   g_free(head);
-}
-
-int main(int argc, char** argv)
-{
-  int index = 0;
-
-  arv_enable_interface("Fake");
-
-  auto cam = new Camera();
-
-  if (!cam->open(index)) {
-    printf("Error\n");
-  } else {
-
-    std::vector<char> data = cam->getFramebuffer();
-
-    cam->save_to_file("output.pgm", data);
-
-    cam->close();
-  }
-
-  arv_shutdown();
-
-  return 0;
 }
