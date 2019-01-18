@@ -4,6 +4,53 @@ PROJECT_DIR=`pwd`
 BUILD_DIR=${PROJECT_DIR}/build
 SRC_DIR=${PROJECT_DIR}/src
 
+SUDO=''
+GIT="/usr/bin/git"
+
+PACKAGES="build-essential git cmake cppcheck autoconf intltool gtk-doc-tools libgtk2.0-dev libxml2-dev"
+
+prepare_libaravis () {
+  echo ">>> Preparing libaravis"
+
+  ${GIT} clone https://github.com/AravisProject/aravis.git --branch ARAVIS_0_6_1 && \
+  if [[ $? -ne 0 ]] ; then echo "Error $1"; exit 1; fi
+
+  cd aravis && \
+    ./autogen.sh && \
+    make -j4
+
+  ${SUDO} make install
+  ${SUDO} ldconfig
+
+  cd ..
+  rm -rf aravis
+}
+
+prepare () {
+  echo ">>> Preparing environment..."
+
+  USER=`id -u`
+
+  if [ "${USER}" -ne 0 ]; then
+    echo "! This preparation needs to run as root"
+    SUDO=sudo
+  fi
+
+  echo "This preparation will install the following packages and its dependencies:"
+  echo "${PACKAGES}"
+  echo -n "Do you agree? (Y/n) "
+
+  read opt
+  echo
+
+  if [ "${opt}" != "n" ]; then
+    ${SUDO} apt-get update && \
+      ${SUDO} apt-get -y install ${PACKAGES}
+  fi
+
+  prepare_libaravis
+}
+
 cmakebuild () {
     echo ">>> Creating project..."
     if [ ! -d ${BUILD_DIR} ]; then
@@ -65,19 +112,23 @@ check() {
 usage() {
   echo "Usage: $1 [OPTIONS]"
   echo ""
-  echo "  -C \t\tCMake Build"
-  echo "  -b \t\tBuild"
-  echo "  -k \t\tStatic code check"
-  echo "  -r \t\tRun app"
-  echo "  -c \t\tClean"
-  echo "  -d \t\tErase build dir"
+  echo "  -p Prepare environment (requires sudo)"
+  echo "  -C CMake Build"
+  echo "  -b Build"
+  echo "  -k Static code check"
+  echo "  -r Run app"
+  echo "  -c Clean"
+  echo "  -d Erase build dir"
   echo ""
 }
 
 RUN=0
-while getopts ":C :b :k :c :r :d" opt; do
+while getopts ":p :C :b :k :c :r :d" opt; do
     RUN=1
     case $opt in
+        p)
+            prepare
+        ;;
         C)
             cmakebuild
         ;;
