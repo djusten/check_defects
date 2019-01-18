@@ -1,5 +1,5 @@
 # Capture Camera Image
-This is a project to trigger images and reading out image data from an industrial camera (GigeVision). Also to create a PGM file with the image acquired.
+This is a project to trigger images and reading out image data from an industrial camera (GigeVision). Also to create a PGM file with the image acquired. 
 There are two posibilities to build, using Docker or native Linux machine.
 
 ## Using Docker
@@ -23,13 +23,13 @@ There are two posibilities to build, using Docker or native Linux machine.
 
 ### Usage example
 
-```$ ./scripts/build-docker.sh && ./scripts/build-in-docker.sh && ./scripts/run-in-docker.sh```
-Binary file is create on _./build/check-defects_.
+```$ ./scripts/build-docker.sh && ./scripts/build-in-docker.sh && ./scripts/run-in-docker.sh``` 
+Binary file is create on _./build/check-defects_. 
 PMG file is create on _./build/output.pgm_.
 
 ## Using native Linux
-NOTE: This application was testes using Linux Ubuntu 16.04.
-There is a script _generate.sh_ to help you to compile and run the application.
+There is a script _generate.sh_ to help you to compile and run the application. 
+_NOTE: This application was testes using Linux Ubuntu 16.04._
 
 ### Project Build
 
@@ -51,6 +51,6 @@ There is a script _generate.sh_ to help you to compile and run the application.
 
 ### Usage example
 
-```$ ./generate.sh -pCbr```
-Binary file is create on _./build/check-defects_.
+```$ ./generate.sh -pCbr``` 
+Binary file is create on _./build/check-defects_. 
 PMG file is create on _./build/output.pgm_.
