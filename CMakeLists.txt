@@ -24,7 +24,7 @@ include_directories (${ARAVIS_INCLUDE_DIRS})
 
 #### build
 set (SOURCE_FILES
-     src/main.cpp
+     src/camera.cpp
     )
 
 add_executable (check-defects ${SOURCE_FILES})
