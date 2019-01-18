@@ -1,16 +1,8 @@
-#include <arv.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <limits.h>
-#include <ctype.h>
-
-#include <string>
 #include <vector>
-#include <algorithm>
 #include <memory>
 #include <fstream>
-#include <iostream>
+
+#include <arv.h>
 
 class ICamera {
   public:
