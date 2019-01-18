@@ -15,8 +15,8 @@
 
 cmake_minimum_required (VERSION 3.0)
 project (check-defects)
-add_compile_options (-std=c++14)
-#add_compile_options (-std=c++14 -Wall -Werror)
+#add_compile_options (-std=c++14)
+add_compile_options (-std=c++14 -Wall -Werror)
 
 #### aravis
 FIND_PACKAGE(PkgConfig)
@@ -25,7 +25,7 @@ include_directories (${ARAVIS_INCLUDE_DIRS})
 
 #### build
 set (SOURCE_FILES
-     src/main2.cpp
+     src/main.cpp
     )
 
 add_executable (check-defects ${SOURCE_FILES})
