@@ -150,9 +150,10 @@ bool Camera::startCapture()
 void Camera::save_to_file(std::string filename, std::vector<char> data)
 {
   gchar *head;
+  int max_color_component = 255;
   std::ofstream output_file(filename);
 
-  head = g_strdup_printf ("P5\n %d\n %d\n 255\n", _height, _width);
+  head = g_strdup_printf ("P5\n %d\n %d\n %d\n", _height, _width, max_color_component);
 
   output_file << head;
 
