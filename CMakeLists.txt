@@ -15,7 +15,6 @@
 
 cmake_minimum_required (VERSION 3.0)
 project (check-defects)
-#add_compile_options (-std=c++14)
 add_compile_options (-std=c++14 -Wall -Werror)
 
 #### aravis
@@ -29,7 +28,11 @@ set (SOURCE_FILES
     )
 
 add_executable (check-defects ${SOURCE_FILES})
-
 target_link_libraries (check-defects
-		png
-    ${ARAVIS_LIBRARIES})
+    ${ARAVIS_LIBRARIES}
+    )
+
+add_executable (check-defects-c src/main_c.cpp)
+target_link_libraries (check-defects-c
+    ${ARAVIS_LIBRARIES}
+    )

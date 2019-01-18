@@ -2,6 +2,7 @@
 
 PROJECT_DIR=`pwd`
 BUILD_DIR=${PROJECT_DIR}/build
+SRC_DIR=${PROJECT_DIR}/src
 
 cmakebuild () {
     echo ">>> Creating project..."
@@ -16,6 +17,12 @@ build () {
     echo ">>> Building..."
     cd ${BUILD_DIR} && \
     make
+}
+
+check_src () {
+  echo ">>> Checking sources..."
+  cd ${SRC_DIR} && \
+  cppcheck *.cpp
 }
 
 run_app () {
@@ -60,6 +67,7 @@ usage() {
   echo ""
   echo "  -C \t\tCMake Build"
   echo "  -b \t\tBuild"
+  echo "  -k \t\tStatic code check"
   echo "  -r \t\tRun app"
   echo "  -c \t\tClean"
   echo "  -d \t\tErase build dir"
@@ -67,7 +75,7 @@ usage() {
 }
 
 RUN=0
-while getopts ":C :b :c :r :d" opt; do
+while getopts ":C :b :k :c :r :d" opt; do
     RUN=1
     case $opt in
         C)
@@ -75,6 +83,9 @@ while getopts ":C :b :c :r :d" opt; do
         ;;
         b)
             build
+        ;;
+        k)
+            check_src
         ;;
         c)
             clean

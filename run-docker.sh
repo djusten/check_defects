@@ -1,1 +1,1 @@
-docker run --rm -it -v ~/work/check_defects/:/app-build checkdefect
+docker run --rm -it -v `pwd`:/app-build checkdefect

@@ -1,1 +1,1 @@
-docker run --rm -it -v ~/work/check_defects/:/app-build checkdefect ./generate.sh -Cb
+docker run --rm -it -v `pwd`:/app-build checkdefect ./generate.sh -dCkb

@@ -52,10 +52,6 @@ void Camera::close()
 {
   if(_camera) {
     stopCapture();
-
-    //FIXME
-    //g_object_unref(_camera);
-    //_camera = nullptr;
   }
 }
 
@@ -83,12 +79,6 @@ bool Camera::create(int index)
 
 bool Camera::initBuffers()
 {
-  if(_stream) {
-    //FIXME
-    //g_object_unref(stream);
-    //_stream = nullptr;
-  }
-
   _stream.reset(arv_camera_create_stream(_camera.get(), NULL, NULL));
   if (_stream) {
     _payload = arv_camera_get_payload (_camera.get());
@@ -144,12 +134,6 @@ std::vector<char> Camera::getFramebuffer()
 void Camera::stopCapture()
 {
   arv_camera_stop_acquisition(_camera.get());
-
-  if(_stream) {
-    //FIXME
-    //g_object_unref(_stream);
-    //_stream = NULL;
-  }
 }
 
 bool Camera::startCapture()
@@ -172,8 +156,8 @@ void Camera::save_to_file(std::string filename, std::vector<char> data)
 
   output_file << head;
 
-  for (int i = 0; i < (int) data.size(); i++)
-    output_file << data[i];
+  for (auto raw : data)
+    output_file << raw;
 
   output_file.close();
   g_free(head);
@@ -185,7 +169,7 @@ int main(int argc, char** argv)
 
   arv_enable_interface("Fake");
 
-  ICamera *cam = new Camera();
+  auto cam = new Camera();
 
   if (!cam->open(index)) {
     printf("Error\n");
@@ -193,7 +177,7 @@ int main(int argc, char** argv)
 
     std::vector<char> data = cam->getFramebuffer();
 
-    cam->save_to_file("/tmp/file.pgm", data);
+    cam->save_to_file("output.pgm", data);
 
     cam->close();
   }
