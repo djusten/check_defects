@@ -19,12 +19,6 @@
 
 #include "camera.h"
 
-Camera::Camera()
-{
-  _camera = nullptr;
-  _stream = nullptr;
-}
-
 void Camera::close()
 {
   if(_camera) {

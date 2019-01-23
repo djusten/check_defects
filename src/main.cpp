@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 
   arv_enable_interface("Fake");
 
-  auto cam = new Camera();
+  auto cam = std::make_unique<Camera>();
 
   if (!cam->open(index)) {
     printf("Error\n");
@@ -34,8 +34,6 @@ int main(int argc, char** argv)
     std::vector<char> data = cam->getFramebuffer();
 
     cam->save_to_file("output.pgm", data);
-
-    cam->close();
   }
 
   arv_shutdown();
